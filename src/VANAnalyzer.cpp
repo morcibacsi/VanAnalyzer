@@ -9,6 +9,7 @@ VanAnalyzer::VanAnalyzer()
     mSimulationInitilized( false )
 {
     SetAnalyzerSettings( mSettings.get() );
+    UseFrameV2();
 }
 
 VanAnalyzer::~VanAnalyzer()
@@ -240,6 +241,27 @@ void VanAnalyzer::AddFrame(U64 startingPoint, U64 endingpoint, U32 data1, U32 ty
     frame.mEndingSampleInclusive = endingpoint;
 
     mResults->AddFrame(frame);
+
+    FrameV2 frame_v2;
+
+    // you can add any number of key value pairs. Each will get it's own column in the data table.
+    if(type == IdentifierField)
+    {
+        frame_v2.AddInteger("Identifier", frame.mData1);
+    }
+    else if(type == CommandField)
+    {
+        frame_v2.AddByte("Command", frame.mData1);
+        frame_v2.AddByte("Data", frame.mData1);
+    }
+    else
+    {
+        frame_v2.AddByte("Data", frame.mData1);
+    }
+
+    // The second parameter is the frame "type". Any string is allowed.
+    mResults->AddFrameV2( frame_v2, VanFrameTypeForDisplay[type], startingPoint, endingpoint );
+
     mResults->CommitResults();
     ReportProgress(frame.mEndingSampleInclusive);
 }

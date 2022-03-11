@@ -8,7 +8,10 @@
 class VanAnalyzerSettings;
 class ANALYZER_EXPORT VanAnalyzer : public Analyzer2
 {
-public:
+  private:
+    char* VanFrameTypeForDisplay[9] = { "SOF", "IDENT", "COM", "DATA", "FCS", "EOD", "ACK", "EOF", "ERROR" };
+
+  public:
     VanAnalyzer();
     virtual ~VanAnalyzer();
 
