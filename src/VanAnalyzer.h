@@ -9,7 +9,7 @@ class VanAnalyzerSettings;
 class ANALYZER_EXPORT VanAnalyzer : public Analyzer2
 {
   private:
-    char* VanFrameTypeForDisplay[9] = { "SOF", "IDENT", "COM", "DATA", "FCS", "EOD", "ACK", "EOF", "ERROR" };
+    char* VanFrameTypeForDisplay[ 9 ] = { "SOF", "IDENT", "COM", "DATA", "FCS", "EOD", "ACK", "EOF", "ERROR" };
 
   public:
     VanAnalyzer();
@@ -24,33 +24,47 @@ class ANALYZER_EXPORT VanAnalyzer : public Analyzer2
     virtual const char* GetAnalyzerName() const;
     virtual bool NeedsRerun();
 
-protected: //vars
-    std::auto_ptr< VanAnalyzerSettings > mSettings;
-    std::auto_ptr< VanAnalyzerResults > mResults;
+  protected: // vars
+    std::auto_ptr<VanAnalyzerSettings> mSettings;
+    std::auto_ptr<VanAnalyzerResults> mResults;
     AnalyzerChannelData* mSerial;
+
+    U64 mBitPositions[ 6 ] = { 0 }; // used to collect the bit positions so we can draw a good looking IDENT and COM field
+    U8 mBitPos = 0;                 // indexer for the mBitPositions array
+
+    U64 mStartOfFieldSampleNumber = 0;
+    U64 mStartOfIdenFieldSampleNumber = 0;
+    U64 mPreviousNonManchesterBitPosition = 0;
+
+    U8 mbitCount = 0;  // used to determine if a bit is Manchester bit
+    U8 mbyteCount = 0; // used to determine which part of the message we are processing
+    U8 mByte = 0;      // we are building the VAN byte in this variable bit by bit
+    U8 mask = 1 << 7;
+
+    bool mFrameStart = true;
+    bool mEofFound = false;
 
     VanSimulationDataGenerator mSimulationDataGenerator;
     bool mSimulationInitilized;
 
     void WaitFor8RecessiveBits();
-    void AddFrame(U64 startingPoint, U64 endingpoint, U32 data1, U32 type, U32 data2);
-    bool GetNibble(U8& nibbleRead, U64& sampleNumberToReturnAsFrameEnding);
-    U8 GetByte(U64& sampleNumberToReturnAsFrameEnding);
-    U8 Get2Bits(U64& sampleNumberToReturnAsFrameEnding);
+    void AddFrame( const U64 startingPoint, const U64 endingPoint, const U32 data, const U32 type, const U32 indexOfData );
+    void ProcessBit( const BitState bitState, const U64 bitPosition );
 
-    //VAN analysis vars:
+    void AddMarker( const U64 inSampleNumber, const AnalyzerResults::MarkerType inMarker );
+
+    // VAN analysis vars:
     U32 mSampleRateHz;
     U32 mSamplesPerBit;
 
-    //VAN vars
-    U32 mNumSamplesIn8Bits;
-    U32 mStartOfFrame;
-    U32 mIdentifier;
-    U32 mCommand;
+    // VAN vars
+    U32 mNumSamplesIn8Bits = 0;
+    U16 mIdent = 0;
+    U8 mCOM = 0;
 };
 
 extern "C" ANALYZER_EXPORT const char* __cdecl GetAnalyzerName();
-extern "C" ANALYZER_EXPORT Analyzer* __cdecl CreateAnalyzer( );
+extern "C" ANALYZER_EXPORT Analyzer* __cdecl CreateAnalyzer();
 extern "C" ANALYZER_EXPORT void __cdecl DestroyAnalyzer( Analyzer* analyzer );
 
-#endif //VAN_ANALYZER_H
+#endif // VAN_ANALYZER_H
