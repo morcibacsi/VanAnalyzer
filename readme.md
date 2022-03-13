@@ -69,9 +69,13 @@ For detailed build instructions please refer to the [SampleAnalyzer repository][
 
 In the Developer tab in Logic preferences, specify the path for loading new plugins, then copy the built plugin into that location.
 
+## Versions
+The 1.x and the 2.x versions are basically the same. The only difference is that version 2.x supports the FrameV2 API which was introduced in Logic v2.x therefore it can't run in Logic 1.x (but the 1.x version of the analyzer can be loaded into both Logic versions). Other than that the functions are identical.
+
 ## TODO
-- Better handling of finding the beginning of the first whole frame in the stream. (now sometimes it fails to decode the first frame, and sometimes it detects garbage as data)
+
 - Find a way to mark the Frame Check Sequence bytes as FCS instead of DATA
+- Show the EOD and ACK bits
 - Implement GenerateSimulationData() method (now it has the default from the SampleAnalyzer)
 
 

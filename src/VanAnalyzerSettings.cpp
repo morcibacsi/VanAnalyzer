@@ -11,7 +11,7 @@ VanAnalyzerSettings::VanAnalyzerSettings()
     mInputChannelInterface->SetChannel( mInputChannel );
 
     mBitRateInterface.reset( new AnalyzerSettingInterfaceInteger() );
-    mBitRateInterface->SetTitleAndTooltip( "Bit Rate (Bits/S)",  "Specify the bit rate in bits per second." );
+    mBitRateInterface->SetTitleAndTooltip( "Bit Rate (Bits/s)",  "Specify the bit rate in bits per second." );
     mBitRateInterface->SetMax( 6000000 );
     mBitRateInterface->SetMin( 1 );
     mBitRateInterface->SetInteger( mBitRate );
