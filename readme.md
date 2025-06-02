@@ -3,7 +3,7 @@
 This plugin for [Saleae Logic][logic] allows you to analyze [VAN][van_network] bus packets found in cars made by PSA (Peugeot, Citroen)
 VAN bus is pretty similar to CAN bus. In the application the **&#9679;** are marking the places where the sample was taken and the **&#10799;** are marking the E-Manchester bits (those must be ignored when decoding the data).
 
-![logic analyzer](https://github.com/morcibacsi/VanAnalyzer/raw/master/docs/Logic_printscreen.png)
+![logic analyzer](./docs/Logic_printscreen.png)
 
 ## Exporting
 
@@ -53,7 +53,7 @@ Hence 4 bits take 5TS to transmit due to the E-Manchester bit being appended. A 
 
 ### Example data
 
-![example](https://github.com/morcibacsi/VanAnalyzer/raw/master/docs/vanex.png)
+![example](./docs/vanex.png)
 
 This example data was captured with a 'scope from a head unit removed from the car and decoded by hand.
 
@@ -71,6 +71,8 @@ In the Developer tab in Logic preferences, specify the path for loading new plug
 
 ## Versions
 The 1.x and the 2.x versions are basically the same. The only difference is that version 2.x supports the FrameV2 API which was introduced in Logic v2.x therefore it can't run in Logic 1.x (but the 1.x version of the analyzer can be loaded into both Logic versions). Other than that the functions are identical.
+
+The last version of the v1 version of Saleae's Logic which is working well is 1.2.29 Beta. Before the last version which is 1.2.40 this is the recommended version by Saleae. Version 1.2.40 has a known issue that it is missing Decoded Protocols Panel, and Protocol Search, due to technical issues. Therefore I recommend to use 1.2.29 Beta with my plugin this is the one I have tested with. It is compiled for x64.
 
 ## TODO
 
