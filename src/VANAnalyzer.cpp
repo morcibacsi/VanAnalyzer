@@ -36,6 +36,8 @@ void VanAnalyzer::WorkerThread()
     mSerial->AdvanceToNextEdge();
     mFrameStart = true;
 
+    NewByte();
+
     // line is low
     U64 startOfFrameSampleNumber = mSerial->GetSampleNumber();
     AddMarker( startOfFrameSampleNumber, AnalyzerResults::Start );
@@ -44,7 +46,7 @@ void VanAnalyzer::WorkerThread()
     {
         mEofFound = false;
 
-        //--- Loop util the EOF (8 consecutive recessive bits)
+        //--- Loop until the EOF (8 consecutive recessive bits)
         do
         {
             BitState currentBitState = mSerial->GetBitState();
@@ -79,21 +81,31 @@ void VanAnalyzer::WorkerThread()
             else
             {
                 // we found the EOF (8 consecutive recessive bits)
-                AddMarker( start, AnalyzerResults::Stop );
-                mEofFound = true;
-                mFrameStart = true;
+                if (mbyteCount == 2)
+                {
+                    // we have a query frame so print the identifier
+                    AddFrame( mStartOfIdenFieldSampleNumber, mPreviousNonManchesterBitPosition + (mSamplesPerBit / 2)*2, (mIdent << 4) | (mByte >> 4), IdentifierField, mbyteCount - 2 );
+                }
+                else
+                {
+                    AddFrame( mStartOfFieldSampleNumber, mPreviousNonManchesterBitPosition + (mSamplesPerBit / 2)*2, mByte, DataField, mbyteCount - 2 );
+                }
+                
+                AddMarker( mPreviousNonManchesterBitPosition + (mSamplesPerBit / 2)*2, AnalyzerResults::Stop );
+                NewByte();
                 mResults->CommitPacketAndStartNewPacket();
             }
             mSerial->AdvanceToNextEdge();
-
+//
+/*
             if( !mSerial->DoMoreTransitionsExistInCurrentData() )
             {
+                AddFrame( mStartOfFieldSampleNumber, mPreviousNonManchesterBitPosition, mByte, DataField, mbyteCount - 2 );
                 // end of stream
                 AddMarker( start, AnalyzerResults::Stop );
-                mEofFound = true;
-                mFrameStart = true;
+                NewByte();
             }
-
+//*/
         } while( mEofFound != true );
         //---
         mResults->CommitResults();
@@ -171,6 +183,27 @@ void VanAnalyzer::ProcessBit( const BitState bitState, const U64 bitPosition )
     mbitCount++;
 }
 
+void VanAnalyzer::NewByte()
+{
+    for (size_t i = 0; i < 6; i++)
+    {
+        mBitPositions[i] = 0;
+    }
+    
+    mEofFound = true;
+    mFrameStart = true;
+    mbitCount = 0;
+    mBitPos = 0;
+    mbyteCount = 0;
+    mByte = 0;
+    mIdent = 0;
+    mCOM = 0;
+    mask = 1 << 7;
+    mPreviousNonManchesterBitPosition = 0;
+    mStartOfFieldSampleNumber = 0;
+    mStartOfIdenFieldSampleNumber = 0;
+}
+
 bool VanAnalyzer::NeedsRerun()
 {
     return false;
@@ -244,26 +277,27 @@ void VanAnalyzer::AddFrame( const U64 startingPoint, const U64 endingPoint, cons
     frame.mEndingSampleInclusive = endingPoint;
 
     mResults->AddFrame( frame );
+//
+/*
+    FrameV2 frame_v2;
 
-    // FrameV2 frame_v2;
-
-    //// you can add any number of key value pairs. Each will get it's own column in the data table.
-    // if( type == IdentifierField )
-    //{
-    //     frame_v2.AddInteger( "Identifier", frame.mData1 );
-    // }
-    // else if( type == CommandField )
-    //{
-    //     frame_v2.AddByte( "Command", frame.mData1 );
-    //     frame_v2.AddByte( "Data", frame.mData1 );
-    // }
-    // else
-    //{
-    //     frame_v2.AddByte( "Data", frame.mData1 );
-    // }
-
-    //// The second parameter is the frame "type". Any string is allowed.
-    // mResults->AddFrameV2( frame_v2, VanFrameTypeForDisplay[ type ], frame.mStartingSampleInclusive, frame.mEndingSampleInclusive );
+    // you can add any number of key value pairs. Each will get it's own column in the data table.
+    if( type == IdentifierField )
+    {
+         frame_v2.AddInteger( "Identifier", frame.mData1 );
+    }
+    else if( type == CommandField )
+    {
+         frame_v2.AddByte( "Command", frame.mData1 );
+         frame_v2.AddByte( "Data", frame.mData1 );
+    }
+    else
+    {
+         frame_v2.AddByte( "Data", frame.mData1 );
+    }
+    // The second parameter is the frame "type". Any string is allowed.
+    mResults->AddFrameV2( frame_v2, VanFrameTypeForDisplay[ type ], frame.mStartingSampleInclusive, frame.mEndingSampleInclusive );
+//*/
 
     mResults->CommitResults();
     ReportProgress( frame.mEndingSampleInclusive );

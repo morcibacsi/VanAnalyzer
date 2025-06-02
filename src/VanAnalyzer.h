@@ -52,6 +52,7 @@ class ANALYZER_EXPORT VanAnalyzer : public Analyzer2
     void ProcessBit( const BitState bitState, const U64 bitPosition );
 
     void AddMarker( const U64 inSampleNumber, const AnalyzerResults::MarkerType inMarker );
+    void NewByte();
 
     // VAN analysis vars:
     U32 mSampleRateHz;
